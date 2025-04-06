@@ -173,7 +173,7 @@ void text_processing::remove_not_letters(std::string &input)
 {
     for (int index = input.size() - 1; index >= 0; --index)
     {
-        if(is_letter(input[index]))
+        if(is_letter(input[index]) || is_white_sign(input[index]))
         {
             continue;
         }
@@ -249,12 +249,7 @@ void text_processing::remove_sequential_duplicates(std::string &input)
     {
         if(input[index] == SPACE || input[index] == COMMA)
         {
-            if(prev_word.empty())
-            {
-                continue;
-            }
-
-            if(words_equal(&prev_word, &curr_word))
+            if(words_equal(&prev_word, &curr_word) && prev_word.empty() == false)
             {
                 input.erase(index + 1, curr_word.size());
             }

@@ -23,9 +23,9 @@ int main(int argc, const char* argv[])
     timer = helpers::dclock() - timer;
 
     std::cout << std::format("File reading took: {}\n", helpers::dclock_to_string(timer));
-    
+
 #if DLOG
-    std::cout << std::format("File contents are: {}\n", text);
+    std::cout << std::format("File contents are: \n{}\n", text);
     // ===================
 
     std::cout << "=====================\n";
