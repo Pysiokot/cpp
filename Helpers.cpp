@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <format>
+#include <vector>
 
 #include "Helpers.h"
 
@@ -74,7 +75,199 @@ std::string helpers::dclock_to_string(double in_dclock)
     return std::move(std::format("{} ms", in_dclock));
 }
 
-std::string text_processing::process(std::string &&input)
+bool text_processing::is_letter(char c)
 {
-  return input;
+    return c >= 32u && c <= 126u;
+}
+
+bool text_processing::is_white_sign(char c)
+{
+    return c == TAB || c == ENTER || c == SPACE;
+}
+
+char text_processing::ascii_to_lower(char c)
+{
+    static constexpr uint8_t char_diff = 'Z' - 'z';
+
+    if (c <= 'Z' && c >= 'A')
+    {
+        return c - char_diff;
+    }
+
+    return c;
+
+}
+
+bool text_processing::is_interpunction_char(char c)
+{
+    return c == '.'
+        || c == '-'
+        || c == ','
+        || c == ':'
+        || c == ';'
+        || c == '?'
+        || c == '!'
+        || c == '"'
+        || c == '('
+        || c == ')'
+        || c == '['
+        || c == ']'
+        || c == '{'
+        || c == '}'
+        || c == '\''
+        ;
+}
+
+bool text_processing::words_equal(std::vector<char> *w1, std::vector<char> *w2)
+{
+    if(w1->size() != w2->size())
+    {
+        return false;
+    }
+
+    for (int i = 0; i < w1->size(); ++i)
+    {
+        if(w1->at(i) != w2->at(i))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+std::string text_processing::process(std::string &input)
+{
+#if DLOG_PROCESS
+    std::cout << "Removing letters\n";
+#endif
+    remove_not_letters(input);
+#if DLOG_PROCESS
+    std::cout << std::format("Text after removed letters:\n\n{}\n\n", input);
+    std::cout << "Squashing white signs\n";
+#endif
+    squash_white_signs(input);
+#if DLOG_PROCESS
+    std::cout << std::format("Text after squashed white signs:\n\n{}\n\n", input);
+    std::cout << "Lowering letters\n";
+#endif
+    to_lower(input);
+#if DLOG_PROCESS
+    std::cout << std::format("Text after lowering letters:\n\n{}\n\n", input);
+    std::cout << "Converting interpuction to commas\n";
+#endif
+    convert_interp_to_commas(input);
+#if DLOG_PROCESS
+    std::cout << std::format("Text after converting to commas:\n\n{}\n\n", input);
+    std::cout << "Removing duplicates\n";
+#endif
+    remove_sequential_duplicates(input);
+#if DLOG_PROCESS
+    std::cout << std::format("Text after removing duplicates:\n\n{}\n\n", input);
+#endif
+
+    return input;
+}
+
+void text_processing::remove_not_letters(std::string &input)
+{
+    for (int index = input.size() - 1; index >= 0; --index)
+    {
+        if(is_letter(input[index]))
+        {
+            continue;
+        }
+
+        input.erase(index, 1);
+    }
+}
+
+void text_processing::squash_white_signs(std::string &input)
+{
+    for (int index = input.size() - 1; index >= 0; --index)
+    {
+        if(is_white_sign(input[index]) == false)
+        {
+            continue;
+        }
+
+        if(index - 1 >= 0)
+        {
+            if(is_white_sign(input[index -1]))
+            {
+                input.erase(index, 1);
+                continue;
+            }
+        }
+
+        input[index] = SPACE;
+    }
+}
+
+void text_processing::to_lower(std::string &input)
+{
+    for (int index = 0; index < input.size(); ++index)
+    {
+        input[index] = ascii_to_lower(input[index]);
+    }
+}
+
+void text_processing::convert_interp_to_commas(std::string &input)
+{
+    for (int index = input.size() - 1; index >= 0; --index)
+    {
+        if(is_interpunction_char(input[index]) == false)
+        {
+            continue;
+        }
+
+        // handle '...'
+        if(input[index] == '.')
+        {
+            const int index_1 = index - 1;
+            if(index_1 > 0 && input[index_1] == '.')
+            {
+                const int index_2 = index - 2;
+                if(index_2 >= 0 && input[index_2] == '.')
+                {
+                    input.erase(index_1, 2);
+                    index = index_2;
+                }
+            }
+        }
+
+        input[index] = ',';
+    }
+}
+
+void text_processing::remove_sequential_duplicates(std::string &input)
+{
+    std::vector<char> prev_word;
+    std::vector<char> curr_word;
+
+    for (int index = input.size() - 1; index >= 0; --index)
+    {
+        if(input[index] == SPACE || input[index] == COMMA)
+        {
+            if(prev_word.empty())
+            {
+                continue;
+            }
+
+            if(words_equal(&prev_word, &curr_word))
+            {
+                input.erase(index + 1, curr_word.size());
+            }
+
+            prev_word = curr_word;
+            curr_word.clear();
+        }
+
+        curr_word.insert(curr_word.begin(), input[index]);
+    }
+
+    if(words_equal(&prev_word, &curr_word))
+    {
+        input.erase(0, curr_word.size());
+    }
 }

@@ -23,8 +23,19 @@ int main(int argc, const char* argv[])
     timer = helpers::dclock() - timer;
 
     std::cout << std::format("File reading took: {}\n", helpers::dclock_to_string(timer));
+    
+#if DLOG
     std::cout << std::format("File contents are: {}\n", text);
     // ===================
+
+    std::cout << "=====================\n";
+#endif
+
+    std::string result = text_processing::process(text);
+
+#if DLOG
+    std::cout << std::format("Parsed contents are: \n{}\n", text);
+#endif
 
     return 0;
 }
