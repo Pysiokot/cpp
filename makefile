@@ -2,9 +2,21 @@ CXX := g++
 CXXFLAGS := -c -std=c++20
 
 
-all:
-	$(CXX) $(CXXFLAGS) *.cpp
-	$(CXX) *.o
+0:
+	$(CXX) $(CXXFLAGS) -DZERO Homework.cpp Helpers.cpp
+	$(CXX) Homework.o Helpers.o
+
+1:
+	$(CXX) $(CXXFLAGS) -DONE Homework.cpp Helpers_1.cpp
+	$(CXX) Homework.o Helpers_1.o
+
+2:
+	$(CXX) $(CXXFLAGS) -DTWO Homework.cpp Helpers_2.cpp
+	$(CXX) Homework.o Helpers_2.o
+
+3:
+	$(CXX) $(CXXFLAGS) -DTHREE Homework.cpp Helpers_3.cpp
+	$(CXX) Homework.o Helpers_3.o
 
 debug_simple:
 	$(CXX) $(CXXFLAGS) -DDLOG *.cpp

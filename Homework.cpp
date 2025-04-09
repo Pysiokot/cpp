@@ -2,7 +2,16 @@
 #include <string.h>
 #include <iostream>
 
+#if ZERO
 #include "Helpers.h"
+#elif ONE
+#include "Helpers_1.h"
+#elif TWO
+#include "Helpers_2.h"
+#elif THREE
+#include "Helpers_3.h"
+#endif
+
 #include "Homework.h"
 
 int main(int argc, const char* argv[])
@@ -31,7 +40,15 @@ int main(int argc, const char* argv[])
     std::cout << "=====================\n";
 #endif
 
+    timer = helpers::dclock();
+#if ZERO || ONE
     std::string result = text_processing::process(text);
+#else
+    text_processing::process(text);
+#endif
+    timer = helpers::dclock() - timer;
+
+    std::cout << std::format("Text processing took: {}\n", helpers::dclock_to_string(timer));
 
 #if DLOG
     std::cout << std::format("Parsed contents are: \n{}\n", text);

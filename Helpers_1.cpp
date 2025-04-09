@@ -5,7 +5,7 @@
 #include <format>
 #include <vector>
 
-#include "Helpers.h"
+#include "Helpers_1.h"
 
 namespace helpers
 {
@@ -14,25 +14,12 @@ namespace helpers
 
 std::string helpers::getFileContents(const char *file_name)
 {
-    std::ifstream input_stream(file_name);
+    auto size = std::filesystem::file_size(file_name);
+    std::string content (size, '\0');
+    std::ifstream in(file_name);
+    in.read(&content[0], size);
 
-    if (!input_stream)
-    {
-    std::cerr << "Can't open input file!";
-    return "";
-    } 
-
-    std::string full_text;
-
-    std::string line;
-    while (getline(input_stream, line)) 
-    {
-        // store each line in the vector
-        full_text += line;
-        full_text += "\n";
-    }
-
-    return std::move(full_text);
+    return std::move(content);
 }
 
 double helpers::dclock()

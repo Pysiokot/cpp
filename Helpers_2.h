@@ -22,11 +22,7 @@ namespace text_processing
     bool is_interpunction_char(char c);
     bool words_equal(std::vector<char>* w1, std::vector<char>* w2);
 
-    std::string process(std::string& input);
+    void process(std::string& input);
 
-    std::string remove_not_letters(std::string input);
-    std::string squash_white_signs(std::string input);
-    std::string to_lower(std::string input);
-    std::string convert_interp_to_commas(std::string input);
-    std::string remove_sequential_duplicates(std::string input);
+    void remove_sequential_duplicates(std::string& input);
 }
