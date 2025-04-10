@@ -10,6 +10,8 @@
 #include "Helpers_2.h"
 #elif THREE
 #include "Helpers_3.h"
+#elif FOUR
+#include "Helpers_4.h"
 #endif
 
 #include "Homework.h"
@@ -43,6 +45,8 @@ int main(int argc, const char* argv[])
     timer = helpers::dclock();
 #if ZERO || ONE
     text = text_processing::process(text);
+#elif FOUR
+    char* res = text_processing::process(text);
 #else
     text_processing::process(text);
 #endif

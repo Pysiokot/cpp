@@ -67,7 +67,7 @@ bool text_processing::is_white_sign(char c)
     return c == TAB || c == ENTER || c == SPACE;
 }
 
-bool text_processing::is_supper(char c)
+bool text_processing::is_upper(char c)
 {
     return c <= 'Z' && c >= 'A';
 }
@@ -127,7 +127,7 @@ std::string text_processing::process(std::string& input)
         {
             continue;
         }
-        if(is_supper(input[index]))
+        if(is_upper(input[index]))
         {
             curr_word += ascii_to_lower(input[index]);
         }

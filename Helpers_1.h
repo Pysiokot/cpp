@@ -18,7 +18,7 @@ namespace text_processing
 
     bool is_letter(char c);
     bool is_white_sign(char c);
-    bool is_supper(char c);
+    bool is_upper(char c);
     char ascii_to_lower(char c);
     bool is_interpunction_char(char c);
     bool words_equal(std::vector<char>* w1, std::vector<char>* w2);
