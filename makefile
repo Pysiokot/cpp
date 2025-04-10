@@ -18,7 +18,7 @@ CXXFLAGS := -c -std=c++20
 	$(CXX) Homework.o Helpers_3.o
 
 4: 
-	$(CXX) $(CXXFLAGS) -DTHREE Homework.cpp Helpers_4.cpp
+	$(CXX) $(CXXFLAGS) -DFOUR Homework.cpp Helpers_4.cpp
 	$(CXX) Homework.o Helpers_4.o
 
 debug_simple:
