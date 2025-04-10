@@ -107,7 +107,7 @@ bool text_processing::is_interpunction_char(char c)
 
 char* text_processing::process(std::string &input)
 {
-    char* result;
+    char* result = (char *)calloc(input.size(), sizeof(char));
     char *curr_word = (char *)calloc(input.size(), sizeof(char));
     char *prev_word = (char *)calloc(input.size(), sizeof(char));
     size_t curr_word_size = 0, prev_word_size = 0;
@@ -148,6 +148,13 @@ char* text_processing::process(std::string &input)
             curr_word_size = 0u;
         }
     }
+
+    memcpy(result, curr_word, curr_word_size);
+    result += curr_word_size;
+    *result = '\0';
+
+    free(curr_word);
+    free(prev_word);
 
     return result;
 }
