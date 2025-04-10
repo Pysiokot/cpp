@@ -67,6 +67,11 @@ bool text_processing::is_white_sign(char c)
     return c == TAB || c == ENTER || c == SPACE;
 }
 
+bool text_processing::is_supper(char c)
+{
+    return c <= 'Z' && c >= 'A';
+}
+
 char text_processing::ascii_to_lower(char c)
 {
     static constexpr uint8_t char_diff = 'Z' - 'z';
@@ -121,10 +126,10 @@ bool text_processing::words_equal(std::vector<char> *w1, std::vector<char> *w2)
 
 void text_processing::process(std::string &input)
 {
-    input.erase(std::remove_if(input.begin(), input.end(), [&](const char& c) 
+    std::remove_if(input.begin(), input.end(), [](const char& c) 
     { 
         return !is_letter(c) && !is_white_sign(c);
-    }));
+    });
 
     for (auto it = input.end(); it != input.begin(); --it)
     {
@@ -147,8 +152,11 @@ void text_processing::process(std::string &input)
 
     std::transform(input.begin(), input.end(), input.begin(), [](char c) 
     {
-        c = ascii_to_lower(c);
-        if(is_interpunction_char(c))
+        if(is_supper(c))
+        {
+            c = ascii_to_lower(c);
+        }
+        else if(is_interpunction_char(c))
         {
             c = ',';
         }
@@ -164,7 +172,8 @@ void text_processing::remove_sequential_duplicates(std::string &input)
     std::vector<char> prev_word;
     std::vector<char> curr_word;
 
-    for (auto it = input.end(); it != input.begin(); --it)
+    auto it = input.end();
+    for (; it != input.begin(); --it)
     {
         if(*it == SPACE || *it == COMMA)
         {
@@ -182,6 +191,6 @@ void text_processing::remove_sequential_duplicates(std::string &input)
 
     if(words_equal(&prev_word, &curr_word))
     {
-        input.erase(0, curr_word.size());
+        input.erase(it, it + curr_word.size());
     }
 }
