@@ -14,25 +14,12 @@ namespace helpers
 
 std::string helpers::getFileContents(const char *file_name)
 {
-    std::ifstream input_stream(file_name);
+    auto size = std::filesystem::file_size(file_name);
+    std::string content (size, '\0');
+    std::ifstream in(file_name);
+    in.read(&content[0], size);
 
-    if (!input_stream)
-    {
-    std::cerr << "Can't open input file!";
-    return "";
-    } 
-
-    std::string full_text;
-
-    std::string line;
-    while (getline(input_stream, line)) 
-    {
-        // store each line in the vector
-        full_text += line;
-        full_text += "\n";
-    }
-
-    return std::move(full_text);
+    return std::move(content);
 }
 
 double helpers::dclock()
@@ -80,17 +67,16 @@ bool text_processing::is_white_sign(char c)
     return c == TAB || c == ENTER || c == SPACE;
 }
 
+bool text_processing::is_supper(char c)
+{
+    return c <= 'Z' && c >= 'A';
+}
+
 char text_processing::ascii_to_lower(char c)
 {
     static constexpr uint8_t char_diff = 'Z' - 'z';
 
-    if (c <= 'Z' && c >= 'A')
-    {
-        return c - char_diff;
-    }
-
-    return c;
-
+    return c - char_diff;
 }
 
 bool text_processing::is_interpunction_char(char c)
@@ -131,37 +117,49 @@ bool text_processing::words_equal(std::vector<char> *w1, std::vector<char> *w2)
     return true;
 }
 
-std::string text_processing::process(std::string &input)
+std::string text_processing::process(std::string& input)
 {
-#if DLOG_PROCESS
-    std::cout << "Removing letters\n";
-#endif
-    input = remove_not_letters(input);
-#if DLOG_PROCESS
-    std::cout << std::format("Text after removed letters:\n\n{}\n\n", input);
-    std::cout << "Squashing white signs\n";
-#endif
-    input = squash_white_signs(input);
-#if DLOG_PROCESS
-    std::cout << std::format("Text after squashed white signs:\n\n{}\n\n", input);
-    std::cout << "Lowering letters\n";
-#endif
-    input = to_lower(input);
-#if DLOG_PROCESS
-    std::cout << std::format("Text after lowering letters:\n\n{}\n\n", input);
-    std::cout << "Converting interpuction to commas\n";
-#endif
-    input = convert_interp_to_commas(input);
-#if DLOG_PROCESS
-    std::cout << std::format("Text after converting to commas:\n\n{}\n\n", input);
-    std::cout << "Removing duplicates\n";
-#endif
-    input = remove_sequential_duplicates(input);
-#if DLOG_PROCESS
-    std::cout << std::format("Text after removing duplicates:\n\n{}\n\n", input);
-#endif
+    std::string result = "";
+    std::string curr_word, prev_word = "";
+    for (size_t index = 0; index < input.size(); ++index)
+    {
+        if(!is_letter(input[index]) && !is_white_sign(input[index]))
+        {
+            continue;
+        }
+        if(is_supper(input[index]))
+        {
+            curr_word += ascii_to_lower(input[index]);
+        }
+        else if(is_interpunction_char(input[index]) == false && is_white_sign(input[index]) == false)
+        {
+            curr_word += input[index];
+        }
+        else if(is_interpunction_char(input[index]))
+        {
+            curr_word += ',';
+        }
+        else if(is_white_sign(input[index]))
+        {
+            while(index + 1 < input.size() && is_white_sign(input[index + 1]))
+            {
+                ++index;
+            }
 
-    return input;
+            if(curr_word != prev_word)
+            {
+                result.append(curr_word);
+                result += SPACE;
+            }
+
+            prev_word = curr_word;
+            curr_word.clear();
+        }
+    }
+
+    result.append(curr_word);
+    
+    return result;
 }
 
 std::string text_processing::remove_not_letters(std::string input)

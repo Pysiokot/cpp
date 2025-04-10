@@ -42,7 +42,7 @@ int main(int argc, const char* argv[])
 
     timer = helpers::dclock();
 #if ZERO || ONE
-    std::string result = text_processing::process(text);
+    text = text_processing::process(text);
 #else
     text_processing::process(text);
 #endif
