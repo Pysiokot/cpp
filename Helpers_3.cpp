@@ -56,22 +56,17 @@ void text_processing::process(std::string &input)
         return !is_letter(c) && !is_white_sign(c);
     });
 
-    for (auto it = input.end(); it != input.begin(); --it)
+    for (auto it = input.begin(); it != input.end(); ++it)
     {
         if(is_white_sign(*it))
         {
-            // remove subsequent white signs
-            if(it - 1 != input.begin())
+            while(it + 1 != input.end() && is_white_sign(*(it + 1)))
             {
-                if(is_white_sign(*(it-1)))
-                {
-                    input.erase(it);
-                    continue;
-                }
+                input.erase(it);
+                ++it;
             }
-            
-            *it = SPACE;
-            continue;
+
+            *(it) = SPACE;
         }
     }
 
@@ -98,13 +93,13 @@ void text_processing::remove_sequential_duplicates(std::string &input)
     std::string curr_word;
 
     auto it = input.end() - 1;
-    for (; it != input.begin() - 1; --it)
+    for (auto it = input.begin(); it != input.end(); ++it)
     {
-        if(*it == SPACE || *it == COMMA)
+        if(*it == SPACE)
         {
             if(prev_word == curr_word)
             {
-                input.erase(it, it + curr_word.size());
+                input.erase(it - curr_word.size(), it);
             }
 
             prev_word = curr_word;
@@ -116,7 +111,6 @@ void text_processing::remove_sequential_duplicates(std::string &input)
 
     if(prev_word == curr_word)
     { 
-        it += 1;
-        input.erase(it, it + curr_word.size());
+        input.erase(it - curr_word.size(), it);
     }
 }

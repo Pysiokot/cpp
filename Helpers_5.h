@@ -13,5 +13,6 @@ namespace text_processing
     char ascii_to_lower(char c);
     bool is_interpunction_char(char c);
 
-    char* process(std::string& input);
+    std::string transform_chars(std::string::iterator start_it, std::string::iterator end_it);
+    std::string process(std::string& input);
 }
