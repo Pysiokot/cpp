@@ -1,61 +1,5 @@
-#include <sys/time.h>
-#include <time.h>
-#include <iostream>
-#include <fstream>
-#include <format>
-#include <vector>
 
 #include "Helpers_3.h"
-
-namespace helpers
-{
-    static double gtod_ref_time_sec = 0.0;
-}
-
-std::string helpers::getFileContents(const char *file_name)
-{
-    auto size = std::filesystem::file_size(file_name);
-    std::string content (size, '\0');
-    std::ifstream in(file_name);
-    in.read(&content[0], size);
-
-    return std::move(content);
-}
-
-double helpers::dclock()
-{
-    double the_time, norm_sec;
-    struct timeval tv;
-
-    gettimeofday( &tv, NULL );
-
-    if ( gtod_ref_time_sec == 0.0 )
-    {
-      gtod_ref_time_sec = ( double ) tv.tv_sec;
-    }
-
-    norm_sec = ( double ) tv.tv_sec - gtod_ref_time_sec;
-    the_time = norm_sec + tv.tv_usec * 1.0e-6;
-    
-    return the_time;
-}
-
-std::string helpers::dclock_to_string(double in_dclock)
-{
-    if(in_dclock < 0.0)
-    {
-      return "";
-    }
-
-    if(in_dclock >= 0.1)
-    {
-      return std::format("{} s", in_dclock);
-    }
-
-    in_dclock *= 1000;
-
-    return std::move(std::format("{} ms", in_dclock));
-}
 
 bool text_processing::is_letter(char c)
 {
@@ -105,28 +49,9 @@ bool text_processing::is_interpunction_char(char c)
         ;
 }
 
-bool text_processing::words_equal(std::vector<char> *w1, std::vector<char> *w2)
-{
-    if(w1->size() != w2->size())
-    {
-        return false;
-    }
-
-    for (int i = w1->size() - 1; i >= 0; --i)
-    {
-        if(w1->at(i) != w2->at(i))
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
 void text_processing::process(std::string &input)
 {
-    std::remove_if(input.begin(), input.end(), [](const char& c) 
+    [[maybe_unused]] auto it = std::remove_if(input.begin(), input.end(), [](const char& c) 
     { 
         return !is_letter(c) && !is_white_sign(c);
     });
@@ -169,15 +94,15 @@ void text_processing::process(std::string &input)
 
 void text_processing::remove_sequential_duplicates(std::string &input)
 {
-    std::vector<char> prev_word;
-    std::vector<char> curr_word;
+    std::string prev_word;
+    std::string curr_word;
 
-    auto it = input.end();
-    for (; it != input.begin(); --it)
+    auto it = input.end() - 1;
+    for (; it != input.begin() - 1; --it)
     {
         if(*it == SPACE || *it == COMMA)
         {
-            if(words_equal(&prev_word, &curr_word) && prev_word.empty() == false)
+            if(prev_word == curr_word)
             {
                 input.erase(it, it + curr_word.size());
             }
@@ -189,8 +114,9 @@ void text_processing::remove_sequential_duplicates(std::string &input)
         curr_word.push_back(*it);
     }
 
-    if(words_equal(&prev_word, &curr_word))
-    {
+    if(prev_word == curr_word)
+    { 
+        it += 1;
         input.erase(it, it + curr_word.size());
     }
 }

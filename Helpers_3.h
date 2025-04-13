@@ -1,13 +1,5 @@
 #include <string>
 
-namespace helpers
-{
-  std::string getFileContents(const char* file_name);
-
-  double dclock();
-
-  std::string dclock_to_string(double in_dclock);
-}
 
 namespace text_processing
 {
@@ -21,7 +13,6 @@ namespace text_processing
     bool is_supper(char c);
     char ascii_to_lower(char c);
     bool is_interpunction_char(char c);
-    bool words_equal(std::vector<char>* w1, std::vector<char>* w2);
 
     void process(std::string& input);
 

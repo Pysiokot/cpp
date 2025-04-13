@@ -1,6 +1,10 @@
 #include <format>
 #include <string.h>
 #include <iostream>
+#include <filesystem>
+#include <fstream>
+#include <time.h>
+#include <sys/time.h>
 
 #if ZERO
 #include "Helpers.h"
@@ -12,9 +16,47 @@
 #include "Helpers_3.h"
 #elif FOUR
 #include "Helpers_4.h"
+#elif FIVE
+#include "Helpers_5.h"
 #endif
 
 #include "Homework.h"
+
+std::string helpers::getFileContents(const char *file_name)
+{
+    std::ifstream ifs(file_name);
+    std::string content( (std::istreambuf_iterator<char>(ifs) ),
+                        (std::istreambuf_iterator<char>()    ) );
+    // auto size = std::filesystem::file_size(file_name);
+    // std::string content (size, '\0');
+    // std::ifstream in(file_name);
+    // in.read(&content[0], size);
+
+    return std::move(content);
+}
+
+namespace helpers
+{
+    static double gtod_ref_time_sec = 0.0;
+}
+
+double helpers::dclock()
+{
+    double the_time, norm_sec;
+    struct timeval tv;
+
+    gettimeofday( &tv, NULL );
+
+    if ( gtod_ref_time_sec == 0.0 )
+    {
+      gtod_ref_time_sec = ( double ) tv.tv_sec;
+    }
+
+    norm_sec = ( double ) tv.tv_sec - gtod_ref_time_sec;
+    the_time = norm_sec + tv.tv_usec * 1.0e-6;
+    
+    return the_time;
+}
 
 int main(int argc, const char* argv[])
 {
@@ -23,8 +65,6 @@ int main(int argc, const char* argv[])
     const std::string file_contents = helpers::getFileContents("test.txt");
     timer = helpers::dclock() - timer;
     std::string text = file_contents;
-
-    std::cout << std::format("File reading took: {}\n", helpers::dclock_to_string(timer));
 
 #if BENCH
 static constexpr int reps = 2000;
@@ -44,17 +84,16 @@ for (int i = 0; i < reps; ++i)
     timer = helpers::dclock() - timer;
 
 #if !BENCH
-    std::cout << std::format("Text processing took: {}\n", helpers::dclock_to_string(timer));
+    std::cout << text;
+    // std::cout << "Text processing took: " << timer << "\n";
 #endif
 #if BENCH
+    std::cout << "Text processing took: " << timer << "\n";
+
     full_time += timer;
 }
 full_time /= reps;
-std::cout << std::format("Avg text processing took: {}\n", helpers::dclock_to_string(full_time));
-#endif
-
-#if DLOG
-    std::cout << std::format("Parsed contents are: \n{}\n", text);
+std::cout << "Avg text processing took: " << full_time << "\n";
 #endif
 
     return 0;

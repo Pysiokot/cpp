@@ -1,14 +1,14 @@
 CXX := g++
-CXXFLAGS := -c -arch arm64 -std=c++20 -O2
+CXXFLAGS := -c -O1
 LIBS := -I/opt/homebrew/include/ -L/opt/homebrew/lib/ -Wl,--no-as-needed -lprofiler -Wl,--as-needed
 LIBS_LINK := -I/opt/homebrew/include/ -L/opt/homebrew/lib/ -lprofiler 
 
 0:
 	$(CXX) $(CXXFLAGS) -DZERO Homework.cpp Helpers.cpp 
-	$(CXX) Homework.o Helpers.o 
+	 $(CXX) Homework.o Helpers.o 
 
 0_bench:
-	$(CXX) $(CXXFLAGS) -DZERO -DBENCH Homework.cpp Helpers.cpp 
+	$(CXX) $(CXXFLAGS) -DZERO -DBENCH Homework.cpp Helpers.cpp
 	$(CXX) Homework.o Helpers.o 
 
 1:
@@ -38,6 +38,10 @@ LIBS_LINK := -I/opt/homebrew/include/ -L/opt/homebrew/lib/ -lprofiler
 4_bench: 
 	$(CXX) $(CXXFLAGS) -DFOUR -DBENCH Homework.cpp Helpers_4.cpp
 	$(CXX) Homework.o Helpers_4.o
+
+5:
+	$(CXX) $(CXXFLAGS) -Xpreprocessor -fopenmp -DZERO Homework.cpp Helpers.cpp -lomp 
+	$(CXX) Homework.o Helpers.o
 
 debug_simple:
 	$(CXX) $(CXXFLAGS) -DDLOG *.cpp

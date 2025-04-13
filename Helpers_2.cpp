@@ -1,61 +1,4 @@
-#include <sys/time.h>
-#include <time.h>
-#include <iostream>
-#include <fstream>
-#include <format>
-#include <vector>
-
 #include "Helpers_2.h"
-
-namespace helpers
-{
-    static double gtod_ref_time_sec = 0.0;
-}
-
-std::string helpers::getFileContents(const char *file_name)
-{
-    auto size = std::filesystem::file_size(file_name);
-    std::string content (size, '\0');
-    std::ifstream in(file_name);
-    in.read(&content[0], size);
-
-    return std::move(content);
-}
-
-double helpers::dclock()
-{
-    double the_time, norm_sec;
-    struct timeval tv;
-
-    gettimeofday( &tv, NULL );
-
-    if ( gtod_ref_time_sec == 0.0 )
-    {
-      gtod_ref_time_sec = ( double ) tv.tv_sec;
-    }
-
-    norm_sec = ( double ) tv.tv_sec - gtod_ref_time_sec;
-    the_time = norm_sec + tv.tv_usec * 1.0e-6;
-    
-    return the_time;
-}
-
-std::string helpers::dclock_to_string(double in_dclock)
-{
-    if(in_dclock < 0.0)
-    {
-      return "";
-    }
-
-    if(in_dclock >= 0.1)
-    {
-      return std::format("{} s", in_dclock);
-    }
-
-    in_dclock *= 1000;
-
-    return std::move(std::format("{} ms", in_dclock));
-}
 
 bool text_processing::is_letter(char c)
 {
@@ -65,6 +8,11 @@ bool text_processing::is_letter(char c)
 bool text_processing::is_white_sign(char c)
 {
     return c == TAB || c == ENTER || c == SPACE;
+}
+
+bool text_processing::is_upper(char c)
+{
+    return c <= 'Z' && c >= 'A';
 }
 
 char text_processing::ascii_to_lower(char c)
@@ -100,81 +48,62 @@ bool text_processing::is_interpunction_char(char c)
         ;
 }
 
-bool text_processing::words_equal(std::vector<char> *w1, std::vector<char> *w2)
-{
-    if(w1->size() != w2->size())
-    {
-        return false;
-    }
-
-    for (int i = 0; i < w1->size(); ++i)
-    {
-        if(w1->at(i) != w2->at(i))
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 void text_processing::process(std::string &input)
 {
+    std::string curr_word, prev_word;
+
     for (int index = input.size() - 1; index >= 0; --index)
     {
-        if(!is_letter(input[index]) && !is_white_sign(input[index]))
+        char& c = input[index];
+        if(!is_letter(c) && !is_white_sign(c))
         {
             input.erase(index, 1);
             continue;
         }
 
-        if(is_white_sign(input[index]))
+        if(is_upper(c))
         {
-            if(index - 1 >= 0)
+            c = ascii_to_lower(c);
+            curr_word += c;
+        }
+        else if(is_interpunction_char(c))
+        {
+            c = ',';
+            curr_word += c;
+        }
+        else if(is_white_sign(c) == false)
+        {
+            curr_word += c;
+        }
+        else
+        {
+            if(curr_word.empty() == false)
             {
-                if(is_white_sign(input[index -1]))
+                if(prev_word == curr_word)
                 {
-                    input.erase(index, 1);
-                    continue;
+                    input.erase(index + 1, curr_word.size());
                 }
+    
+                prev_word = curr_word;
+                curr_word.clear();
             }
-            input[index] = SPACE;
-            continue;
-        }
 
-        input[index] = ascii_to_lower(input[index]);
-
-        if(is_interpunction_char(input[index]))
-        {
-            input[index] = ',';
-        }
-    }
-
-    remove_sequential_duplicates(input);
-}
-
-void text_processing::remove_sequential_duplicates(std::string &input)
-{
-    std::vector<char> prev_word;
-    std::vector<char> curr_word;
-
-    for (int index = input.size() - 1; index >= 0; --index)
-    {
-        if(input[index] == SPACE || input[index] == COMMA)
-        {
-            if(words_equal(&prev_word, &curr_word) && prev_word.empty() == false)
+            while(index > 0 && is_white_sign(input[index - 1]))
             {
-                input.erase(index + 1, curr_word.size());
+                input.erase(index, 1);
+                --index;
             }
 
-            prev_word = curr_word;
-            curr_word.clear();
+            c = SPACE;
         }
-
-        curr_word.insert(curr_word.begin(), input[index]);
     }
 
-    if(words_equal(&prev_word, &curr_word))
+    if(is_white_sign(input[0]) && is_white_sign(input[1]))
+    {
+        input.erase(0, 1);
+    }
+    
+    if(curr_word == prev_word)
     {
         input.erase(0, curr_word.size());
     }
