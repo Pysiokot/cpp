@@ -18,41 +18,40 @@
 
 int main(int argc, const char* argv[])
 {
-    if(argc < 2)
-    {
-        std::cerr << "Plase specify filename to parse.\n";
-        return -1;
-    }
-    else if(argc > 2)
-    {
-        std::cout << "Additional parameters apart from first (FileName) will be ignored.\n";
-    }
-
     // ==== read file ====
     float timer = helpers::dclock();
-    std::string text = helpers::getFileContents(argv[1]);
+    const std::string file_contents = helpers::getFileContents("test.txt");
     timer = helpers::dclock() - timer;
+    std::string text = file_contents;
 
     std::cout << std::format("File reading took: {}\n", helpers::dclock_to_string(timer));
 
-#if DLOG
-    std::cout << std::format("File contents are: \n{}\n", text);
-    // ===================
-
-    std::cout << "=====================\n";
+#if BENCH
+static constexpr int reps = 2000;
+float full_time = 0.f;
+for (int i = 0; i < reps; ++i)
+{
+    text = file_contents;
 #endif
-
     timer = helpers::dclock();
-#if ZERO || ONE
-    text = text_processing::process(text);
-#elif FOUR
+    #if ZERO || ONE
+        text = text_processing::process(text);
+    #elif FOUR
     char* res = text_processing::process(text);
-#else
-    text_processing::process(text);
-#endif
+    #else
+        text_processing::process(text);
+    #endif
     timer = helpers::dclock() - timer;
 
+#if !BENCH
     std::cout << std::format("Text processing took: {}\n", helpers::dclock_to_string(timer));
+#endif
+#if BENCH
+    full_time += timer;
+}
+full_time /= reps;
+std::cout << std::format("Avg text processing took: {}\n", helpers::dclock_to_string(full_time));
+#endif
 
 #if DLOG
     std::cout << std::format("Parsed contents are: \n{}\n", text);
